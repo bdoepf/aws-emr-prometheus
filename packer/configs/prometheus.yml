@@ -1,0 +1,189 @@
+global:
+  # How frequently to scrape targets
+  scrape_interval:     15s # By default, scrape targets every 15 seconds.
+
+  # How frequently to evaluate rules
+  evaluation_interval: 5s
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+    monitor: 'emr'
+
+# Rules and alerts are read from the specified file(s)
+rule_files:
+  - rules.yml
+
+# Alerting specifies settings related to the Alertmanager
+alerting:
+  alertmanagers:
+    - scheme: http
+      static_configs:
+        - targets: ['localhost:9093']
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'hadoop'
+
+    # Override the global default and scrape targets from this job every 15 seconds.
+    scrape_interval: 15s
+
+    ec2_sd_configs:
+      - region: us-west-2
+        profile: EMR_EC2_DefaultRole
+        port: 9100
+        filters:
+          - name: tag:application
+            values:
+              - hadoop
+
+    relabel_configs:
+      #Use instance ID as the instance label instead of private ip:port
+      - source_labels: [__meta_ec2_instance_id]
+        target_label: instance
+      - source_labels: [__meta_ec2_tag_aws_elasticmapreduce_job_flow_id]
+        target_label: cluster_id
+
+  - job_name: 'hadoop_hdfs_namenode'
+
+    # Override the global default and scrape targets from this job every 15 seconds.
+    scrape_interval: 15s
+
+    ec2_sd_configs:
+      - region: us-west-2
+        profile: EMR_EC2_DefaultRole
+        port: 7001
+        filters:
+          - name: tag:application
+            values:
+              - hadoop
+          - name: tag:aws:elasticmapreduce:instance-group-role
+            values:
+              - MASTER
+
+    relabel_configs:
+      #Use instance ID as the instance label instead of private ip:port
+      - source_labels: [__meta_ec2_instance_id]
+        target_label: instance
+      - source_labels: [__meta_ec2_tag_aws_elasticmapreduce_job_flow_id]
+        target_label: cluster_id
+
+  - job_name: 'hadoop_hdfs_datanode'
+
+    # Override the global default and scrape targets from this job every 15 seconds.
+    scrape_interval: 15s
+
+    ec2_sd_configs:
+      - region: us-west-2
+        profile: EMR_EC2_DefaultRole
+        port: 7001
+        filters:
+          - name: tag:application
+            values:
+              - hadoop
+          - name: tag:aws:elasticmapreduce:instance-group-role
+            values:
+              - CORE
+
+    relabel_configs:
+      #Use instance ID as the instance label instead of private ip:port
+      - source_labels: [__meta_ec2_instance_id]
+        target_label: instance
+      - source_labels: [__meta_ec2_tag_aws_elasticmapreduce_job_flow_id]
+        target_label: cluster_id
+
+  - job_name: 'hadoop_yarn_resourcemanager'
+
+    # Override the global default and scrape targets from this job every 15 seconds.
+    scrape_interval: 15s
+
+    ec2_sd_configs:
+      - region: us-west-2
+        profile: EMR_EC2_DefaultRole
+        port: 7005
+        filters:
+          - name: tag:application
+            values:
+              - hadoop
+          - name: tag:aws:elasticmapreduce:instance-group-role
+            values:
+              - MASTER
+
+    relabel_configs:
+      #Use instance ID as the instance label instead of private ip:port
+      - source_labels: [__meta_ec2_instance_id]
+        target_label: instance
+      - source_labels: [__meta_ec2_tag_aws_elasticmapreduce_job_flow_id]
+        target_label: cluster_id
+
+  - job_name: 'hadoop_yarn_nodemanager'
+
+    # Override the global default and scrape targets from this job every 15 seconds.
+    scrape_interval: 15s
+
+    ec2_sd_configs:
+      - region: us-west-2
+        profile: EMR_EC2_DefaultRole
+        port: 7005
+        filters:
+          - name: tag:application
+            values:
+              - hadoop
+    relabel_configs:
+      #This job is for monitoring CORE and TASK nodes, so drop MASTER node.
+      - source_labels: [__meta_ec2_tag_aws_elasticmapreduce_instance_group_role]
+        regex: MASTER
+        action: drop
+        #Use instance ID as the instance label instead of private ip:port
+      - source_labels: [__meta_ec2_instance_id]
+        target_label: instance
+      - source_labels: [__meta_ec2_tag_aws_elasticmapreduce_job_flow_id]
+        target_label: cluster_id
+
+  - job_name: 'hive_server2'
+
+    # Override the global default and scrape targets from this job every 15 seconds.
+    scrape_interval: 15s
+
+    ec2_sd_configs:
+      - region: us-west-2
+        profile: EMR_EC2_DefaultRole
+        port: 7002
+        filters:
+          - name: tag:application
+            values:
+              - hadoop
+          - name: tag:aws:elasticmapreduce:instance-group-role
+            values:
+              - MASTER
+    relabel_configs:
+      #Use instance ID as the instance label instead of private ip:port
+      - source_labels: [__meta_ec2_instance_id]
+        target_label: instance
+      - source_labels: [__meta_ec2_tag_aws_elasticmapreduce_job_flow_id]
+        target_label: cluster_id
+
+  - job_name: 'hive_metastore'
+
+    # Override the global default and scrape targets from this job every 15 seconds.
+    scrape_interval: 15s
+
+    ec2_sd_configs:
+      - region: us-west-2
+        profile: EMR_EC2_DefaultRole
+        port: 7003
+        filters:
+          - name: tag:application
+            values:
+              - hadoop
+          - name: tag:aws:elasticmapreduce:instance-group-role
+            values:
+              - MASTER
+    relabel_configs:
+      #Use instance ID as the instance label instead of private ip:port
+      - source_labels: [__meta_ec2_instance_id]
+        target_label: instance
+      - source_labels: [__meta_ec2_tag_aws_elasticmapreduce_job_flow_id]
+        target_label: cluster_id

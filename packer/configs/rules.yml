@@ -1,0 +1,13 @@
+groups:
+# - name: emr_alerts
+#   rules:
+
+#   # Alert for any instance that has disks on mount points greater than 90% full for >=5 seconds.
+#   - alert: disk_full_critical
+#     expr: (1 -(node_filesystem_avail_bytes{mountpoint="/emr", fstype!="tmpfs"} / node_filesystem_size_bytes{mountpoint="/emr", fstype!="tmpfs"})) > 0.05
+#     for: 5s
+#     labels:
+#       severity: critical
+#     annotations:
+#       summary: "Mount point on Instance {{ $labels.instance }} out of disk space."
+#       description: "Mount point on {{ $labels.instance }} of job {{ $labels.job }} is almost full (< 10% left)\n VALUE={{ $value }}."
