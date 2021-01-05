@@ -16,7 +16,7 @@ resource "aws_emr_cluster" "emr" {
   name          = var.emr_name
   release_label = var.emr_release_label
   service_role  = var.emr_service_role_arn
-  applications  = ["Spark", "Hadoop"]
+  applications  = ["Spark", "Hadoop", "Flink"]
 
   ec2_attributes {
     subnet_id                         = var.subnet_id
@@ -50,6 +50,19 @@ resource "aws_emr_cluster" "emr" {
     local.jmx_configs_s3_paths
     )
   }
+
+  configurations_json = <<EOF
+[
+  {
+    "Classification": "flink-conf",
+    "Properties": {
+      "metrics.reporter.prom.class": "org.apache.flink.metrics.prometheus.PrometheusReporter",
+      "metrics.reporter.prom.port": "9249"
+    }
+  }
+]
+EOF
+
   tags = var.tags
 }
 

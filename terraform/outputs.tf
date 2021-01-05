@@ -5,3 +5,7 @@ output "grafana_url" {
 output "emr_master_dns" {
   value = var.enable_emr ? module.emr_prometheus.0.emr_master_dns : ""
 }
+
+output "emr_cluster_id" {
+  value = var.enable_emr ? module.emr_prometheus.0.emr_cluster_id : ""
+}
